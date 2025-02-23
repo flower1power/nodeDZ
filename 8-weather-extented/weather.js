@@ -15,7 +15,7 @@ import {
   getWeather,
   getGeoCoodiantes,
   getIcon,
-} from './services/api.service.js';
+} from './services/api.v2.service.js';
 
 const saveToken = async (token) => {
   if (!token.length) {
