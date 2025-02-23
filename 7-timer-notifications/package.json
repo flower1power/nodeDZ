@@ -1,0 +1,23 @@
+{
+  "name": "timer-notification",
+  "version": "1.0.0",
+  "main": "app.mjs",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flower1power/nodeDZ.git"
+  },
+  "author": "Viktor Lobintsev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flower1power/nodeDZ/issues"
+  },
+  "homepage": "https://github.com/flower1power/nodeDZ#readme",
+  "description": "",
+  "dependencies": {
+    "node-notifier": "^10.0.1"
+  }
+}
