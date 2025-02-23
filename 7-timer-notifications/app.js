@@ -1,5 +1,4 @@
 const notifier = require("node-notifier");
-const path = require("path");
 
 let h = convertNaN(Number(process.argv[2]));
 let m = convertNaN(Number(process.argv[3]));
