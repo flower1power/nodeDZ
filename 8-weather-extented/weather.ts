@@ -13,13 +13,13 @@ import {
 } from './services/storage.service.js';
 import {
   getWeather,
-  getGeoCoodiantes,
+  getGeoCoordinates,
   getIcon,
 } from './services/api.v2.service.js';
 
-const saveToken = async (token) => {
+const saveToken = async (token: string): Promise<void> => {
   if (!token.length) {
-    printError(`Не передан токен`);
+    printError('Не передан токен');
     return;
   }
 
@@ -27,11 +27,11 @@ const saveToken = async (token) => {
     await saveKeyValue(TOKEN_DICTIONARY.token, token);
     printSuccess('Токен сохранен');
   } catch (e) {
-    printError(`Ошибка: ${e.message}`);
+    printError(`Ошибка: ${(e as Error).message}`);
   }
 };
 
-const saveCity = async (cities) => {
+const saveCity = async (cities: string[]): Promise<void> => {
   if (!cities || cities.length === 0) {
     printError(`Не переданы города`);
     return;
@@ -42,11 +42,11 @@ const saveCity = async (cities) => {
     printError('Не указан токен, задайте его через команду -t [API_KEY]');
     return;
   }
-  const validCities = [];
+  const validCities: string[] = [];
 
   for (const city of cities) {
     try {
-      const geo = await getGeoCoodiantes(city, token);
+      const geo = await getGeoCoordinates(city, token);
 
       if (geo.lat && geo.lon) {
         validCities.push(city);
@@ -61,30 +61,39 @@ const saveCity = async (cities) => {
       await saveKeyValue(TOKEN_DICTIONARY.city, validCities);
       printSuccess(`Города сохранены: ${validCities.join(', ')}`);
     } catch (e) {
-      printError(`Ошибка сохранения городов: ${e.message}`);
+      printError(`Ошибка сохранения городов: ${(e as Error).message}`);
     }
   } else {
     printError('Ни один из переданных городов не был найден');
   }
 };
 
-const getForcast = async (lang) => {
+const getForecast = async (lang: 'ru' | 'en'): Promise<void> => {
   try {
     const weathers = await getWeather(lang);
 
+    if (weathers.length === 0) {
+      printError('Нет данных');
+      return;
+    }
+
     for (const el of weathers) {
-      printWeather(el, getIcon(el.data.weather[0].icon), lang);
+      if (el.data) {
+        printWeather(el.data, getIcon(el.data.weather[0].icon), lang);
+      } else {
+        printError(`Ошибка для города ${el.city}: ${el.error}`);
+      }
     }
   } catch (e) {
-    if (e?.response?.status === 401) {
+    if ((e as any)?.response?.status === 401) {
       printError('Не верно указан токен');
     } else {
-      printError(e.message);
+      printError((e as Error).message);
     }
   }
 };
 
-const initCLI = async () => {
+const initCLI = async (): Promise<void> => {
   const args = getArgs(process.argv);
 
   if (args.h) {
@@ -92,12 +101,12 @@ const initCLI = async () => {
   }
   if (args.s) {
     const cities = Array.isArray(args.s) ? args.s : [args.s];
-    return saveCity(cities);
+    return saveCity(cities as string[]);
   }
   if (args.t) {
-    return saveToken(args.t);
+    return saveToken(args.t as string);
   }
-  getForcast(args.l);
+  getForecast(args.l as 'ru' | 'en');
 };
 
 initCLI();

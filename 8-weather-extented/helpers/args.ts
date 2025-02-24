@@ -1,8 +1,10 @@
-export const getArgs = (args) => {
-  const res = {};
+type TGetArgs = Record<string, string | string[] | boolean>;
 
-  const [executer, file, ...rest] = args;
-  rest.forEach((value, index, array) => {
+export const getArgs = (args: string[]): TGetArgs => {
+  const res: TGetArgs = {};
+
+  const [, , ...rest] = args;
+  rest.forEach((value: string, index: number, array: string[]): void => {
     if (value.charAt(0) === '-') {
       if (index === array.length - 1) {
         res[value.substring(1)] = true;
