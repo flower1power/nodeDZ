@@ -1,26 +1,30 @@
-import dotenv from 'dotenv';
-import axios from 'axios';
-
-dotenv.config();
-
-const API_KEY = process.env.API_KEY;
-const BASE_URL = 'https://api.openweathermap.org';
-
-if (!API_KEY) {
-  throw new Error('❌ API_KEY не задан в .env!');
-}
+import axios, { AxiosError } from 'axios';
 
 const _getCoordinates = async (city) => {
   console.log(`🔍 Запрашиваем координаты для города: ${city}`);
 
-  const url = `${BASE_URL}/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`;
-  const { data } = await axios.get(url);
+  try {
+    const url = `${process.env.BASE_URL}/geo/1.0/direct?q=${city}&limit=1&appid=${process.env.API_KEY}`;
+    const { data } = await axios.get(url);
 
-  if (data.length === 0) {
-    throw new Error(`Город ${city} не найден`);
+    if (data.length === 0) {
+      throw new Error(`Город ${city} не найден`);
+    }
+
+    return { lat: data[0].lat, lon: data[0].lon };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      console.error(
+        `❌ Ошибка при получении координат для города "${city}":`,
+        err.message,
+      );
+    } else {
+      console.error(
+        `❌ Неизвестная ошибка при получении координат для города "${city}":`,
+        err.message,
+      );
+    }
   }
-
-  return { lat: data[0].lat, lon: data[0].lon };
 };
 
 const getWeather = async (city, lang = 'ru') => {
@@ -28,25 +32,39 @@ const getWeather = async (city, lang = 'ru') => {
 
   console.log(`🌍 Запрашиваем погоду для координат: lat=${lat}, lon=${lon}`);
 
-  const url = new URL(`${BASE_URL}/data/2.5/weather`);
-  const { data } = await axios.get(`${url}`, {
-    params: {
-      lat,
-      lon,
-      appid: API_KEY,
-      units: 'metric',
-      lang,
-    },
-  });
+  try {
+    const url = new URL(`${process.env.BASE_URL}/data/2.5/weather`);
+    const { data } = await axios.get(`${url}`, {
+      params: {
+        lat,
+        lon,
+        appid: process.env.API_KEY,
+        units: 'metric',
+        lang,
+      },
+    });
 
-  console.log(`✅ Получена погода для ${city}`);
+    console.log(`✅ Получена погода для ${city}`);
 
-  return {
-    description: data.weather[0].description,
-    temperature: data.main.temp,
-    humidity: data.main.humidity,
-    wind_speed: data.wind.speed,
-  };
+    return {
+      description: data.weather[0].description,
+      temperature: data.main.temp,
+      humidity: data.main.humidity,
+      wind_speed: data.wind.speed,
+    };
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      console.error(
+        `❌ Ошибка при получении погоды для города "${city}":`,
+        err.message,
+      );
+    } else {
+      console.error(
+        `❌ Неизвестная ошибка при получении погоды для города "${city}":`,
+        err,
+      );
+    }
+  }
 };
 
 export default getWeather;
